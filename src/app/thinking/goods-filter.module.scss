@@ -1,0 +1,37 @@
+.FilterableProductTable {
+	padding: 4px;
+}
+
+.SearchBar {
+	padding: 8px;
+}
+
+.SearchBar__textField {
+	padding: 4px;
+}
+
+.SearchBar__checkBox {
+	user-select: none;
+}
+
+.ProductTable {
+	padding: 8px;
+
+	th, td {
+		padding-left: 2px;
+		padding-right: 2px;
+	}
+}
+
+.ProductTableHeader {
+	font-weight: 700;
+}
+
+.itemStocked {
+	color: inherit;
+}
+.itemSoldout {
+	td:first-child {
+		color: red;
+	}
+}
