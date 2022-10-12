@@ -18,7 +18,7 @@ function Cell(props: {player: Player|null, onClick: () => any}) {
 	}
 
 	return (
-		<td onClick={onClick} {...other}>
+		<td className={classes.cell} onClick={onClick} {...other}>
 			{text}
 		</td>
 	)
@@ -29,13 +29,23 @@ function Gameboard(props: {size: number, mat: Mat, onCheck: (where: Coord) => an
 
 	// ⭕✖️
 
-	let tableContent = new Array(size).fill(0).map((_, row) => (
-		<tr key={row}>
-			{new Array(size).fill(0).map((_, col) => (
-				<Cell key={col} player={mat[row][col]} onClick={() => onCheck({x: row, y: col})} />
-			))}
+	let tableContent = new Array(size + 1).fill(0).map((_, row2) => {
+		let row = row2 - 1
+		return <tr key={row}>
+			{new Array(size + 1).fill(0).map((_, col2) => {
+				let col = col2 - 1
+				if(col >= 0 && row >= 0) {
+					return <Cell key={col} player={mat[row][col]} onClick={() => onCheck({x: row, y: col})} />
+				} else if(col < 0 && row >= 0) {
+					return <td key={col} className={classes.number}>{row + 1}</td>
+				} else if(row < 0 && col >= 0) {
+					return <td key={col} className={classes.number}>{col + 1}</td>
+				} else {
+					return <td key={col} className={classes.number}></td>
+				}
+			})}
 		</tr>
-	))
+	})
 
 	return (
 		<div className={classes.GameBoard} {...other}>
@@ -48,15 +58,15 @@ function Gameboard(props: {size: number, mat: Mat, onCheck: (where: Coord) => an
 	)
 }
 
-function StatusText(props: {state: GameState, player: Player}) {
-	const { state, player, ...other } = props
+function StatusText(props: {state: GameState, player: Player, checkCount: number}) {
+	const { state, player, checkCount, ...other } = props
 
 	let playerName = {
 		[Player.Circle]: 'Circle',
 		[Player.Cross]: 'Cross'
 	}[player]
 	let text = {
-		[GameState.Ongoing]: `It's ${playerName}'s turn.`,
+		[GameState.Ongoing]: `It's ${playerName}'s turn ${checkCount}.`,
 		[GameState.Finished]: `${playerName} won.`,
 		[GameState.Tie]: `Tie.`
 	}[state]
@@ -68,14 +78,22 @@ function StatusText(props: {state: GameState, player: Player}) {
 	)
 }
 
-export function TicTacToe(props: {}) {
-	const { ...other } = props
+interface TicTacToeProps {
+	boardSize: number
+	winRequire: number
+	loseRequire: number
+	checks: number
+	initChecks: number
+	looped?: boolean
+}
+export function TicTacToe(props: TicTacToeProps) {
+	const { boardSize, winRequire, loseRequire, checks, initChecks, looped, ...other } = props
 
-	const size = 3
-	let emptyMat = new Array(size).fill(0).map(() => new Array(size).fill(null)) as Mat
+	let emptyMat = new Array(boardSize).fill(0).map(() => new Array(boardSize).fill(null)) as Mat
 	const [ mat, setMat ] = useState(emptyMat)
 	const [ state, setState ] = useState(GameState.Ongoing)
 	const [ player, setPlayer ] = useState(Player.Circle)
+	const [ checkCount, setCheckCount ] = useState(initChecks)
 
 	let matCopy = mat.map(x => x.map(x => x))
 
@@ -83,6 +101,7 @@ export function TicTacToe(props: {}) {
 		setMat(emptyMat)
 		setState(GameState.Ongoing)
 		setPlayer(Player.Circle)
+		setCheckCount(initChecks)
 	}
 
 	let getCell = (where: Coord) => {
@@ -113,41 +132,75 @@ export function TicTacToe(props: {}) {
 	}
 
 	let checkWin = () => {
-		let winningPlayer = (() => {
-			for(let i = 0; i < size; i++) {
-				let points1: Coord[] = []
-				let points2: Coord[] = []
-				for(let j = 0; j < size; j++) {
-					points1.push({x: i, y: j})
-					points2.push({x: j, y: i})
+		let findWinning = (required: number) => {
+			let checkLine = (points: Coord[], requireLength: number) => {
+				for(let i = 0; i <= points.length - requireLength; i++) {
+					let result = checkSame(points.slice(i, i + requireLength))
+					if(result !== null) {
+						return result
+					}
 				}
-				let check1 = checkSame(points1)
-				let check2 = checkSame(points2)
-				if(check1 !== null) {
-					return check1
+				return null
+			}
+
+			let lines: Coord[][] = []
+			let fullMat: Coord[] = new Array(boardSize).fill(0).map((_, row) => (
+				new Array(boardSize).fill(0).map((_, col) => ({x: row, y: col}))
+			)).reduce((x, y) => x.concat(y))
+			if(!looped) {
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(new Array(boardSize).fill(0).map((_, index) => (
+						{x: i, y: index % boardSize}
+					)))
 				}
-				if(check2 !== null) {
-					return check2
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(new Array(boardSize).fill(0).map((_, index) => (
+						{x: index % boardSize, y: i}
+					)))
+				}
+				for(let i = 0; i < boardSize * 2 - 1; i++) {
+					lines.push(fullMat.filter((where) => where.x + where.y == i))
+				}
+				for(let i = 0; i < boardSize * 2 - 1; i++) {
+					lines.push(fullMat.filter((where) => where.x - where.y + boardSize - 1 == i))
+				}
+			} else {
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(new Array(boardSize * 2).fill(0).map((_, index) => (
+						{x: i, y: index % boardSize}
+					)))
+				}
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(new Array(boardSize * 2).fill(0).map((_, index) => (
+						{x: index % boardSize, y: i}
+					)))
+				}
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(fullMat.filter((where) => (where.x + where.y) % boardSize == i))
+				}
+				for(let i = 0; i < boardSize; i++) {
+					lines.push(fullMat.filter((where) => (where.x - where.y + boardSize - 1) % boardSize == i))
 				}
 			}
-			let points1: Coord[] = []
-			let points2: Coord[] = []
-			for(let i = 0; i < size; i++) {
-				points1.push({x: i, y: i})
-				points2.push({x: i, y: size - i - 1})
+			for(let line of lines) {
+				let result = checkLine(line, required)
+				if(result !== null) {
+					return result
+				}
 			}
-			let check1 = checkSame(points1)
-			let check2 = checkSame(points2)
-			if(check1 !== null) {
-				return check1
-			}
-			if(check2 !== null) {
-				return check2
-			}
+
 			return null
-		})()
+		}
+
+		let winningPlayer = findWinning(winRequire)
 		if(winningPlayer !== null) {
 			setPlayer(winningPlayer)
+			setState(GameState.Finished)
+			return
+		}
+		let losingPlayer = findWinning(loseRequire)
+		if(losingPlayer !== null) {
+			setPlayer(losingPlayer == Player.Circle ? Player.Cross : Player.Circle)
 			setState(GameState.Finished)
 			return
 		}
@@ -175,15 +228,20 @@ export function TicTacToe(props: {}) {
 		}
 		
 		setCell(where, player)
-		switchPlayer()
+		if(checkCount == checks) {
+			switchPlayer()
+			setCheckCount(1)
+		} else {
+			setCheckCount(checkCount + 1)
+		}
 
 		checkWin()
 	}
 
 	return (
-		<div className={classes.TicTacToe} {...props}>
-			<Gameboard size={size} mat={mat} onCheck={handleCheck} />
-			<StatusText state={state} player={player} />
+		<div className={classes.TicTacToe} {...other}>
+			<Gameboard size={boardSize} mat={mat} onCheck={handleCheck} />
+			<StatusText state={state} player={player} checkCount={checkCount} />
 			<button onClick={resetGame} type="button">Reset</button>
 		</div>
 	)

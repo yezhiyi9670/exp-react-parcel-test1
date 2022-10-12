@@ -15,6 +15,8 @@ root.render(
 		{/* <AlertButton text="Click me" alert="1" /> */}
 		{/* <HelloNames names={['Sara', 'Cahal', 'Edite']} /> */}
 		{/* <ProductTableApp /> */}
-		<TicTacToe />
+		{/* <TicTacToe boardSize={15} winRequire={5} loseRequire={999} checks={1} initChecks={1} /> */}
+		{/* <TicTacToe boardSize={21} loseRequire={999} winRequire={7} checks={2} initChecks={2} looped /> */}
+		<TicTacToe boardSize={15} winRequire={4} loseRequire={3} checks={1} initChecks={1} />
 	</>
 )
