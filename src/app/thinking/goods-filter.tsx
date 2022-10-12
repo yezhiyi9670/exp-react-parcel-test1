@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, useState } from 'react'
 
-import classes from './goods-filter.module.scss'
+import * as classes from './goods-filter.module.scss'
 
 interface Product {
 	category: string

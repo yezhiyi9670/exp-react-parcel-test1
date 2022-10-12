@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import classes from './tictactoe.module.scss'
+import * as classes from './tictactoe.module.scss'
 
 enum GameState { Ongoing, Finished, Tie }
 enum Player { Circle, Cross }
