@@ -1,0 +1,32 @@
+.TicTacToe {
+	padding: 12px;
+}
+
+.GameBoard {
+	table {
+		border-spacing: 2px;
+	}
+	td {
+		border: 1px solid #000;
+		width: 48px;
+		height: 48px;
+		background-color: white;
+		overflow-x: hidden;
+		user-select: none;
+		text-align: center;
+		vertical-align: middle;
+		font-size: 32px;
+		transition: background-color .3s;
+	}
+	td:hover {
+		background-color: #e3e3e3;
+	}
+	td:active {
+		background-color: #ccc;
+		transition-duration: 0.0s;
+	}
+}
+
+.StatusText {
+	margin-top: 12px;
+}

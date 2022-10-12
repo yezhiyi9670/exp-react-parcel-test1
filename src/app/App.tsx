@@ -5,6 +5,7 @@ import { HelloName, HelloNames } from './helloworld/helloworld'
 import { ClockApp } from './clock/clock'
 import { AlertButton } from './event/clickable'
 import { ProductTableApp } from './thinking/goods-filter'
+import { TicTacToe } from './tictactoe/tictactoe'
 
 const root = createRoot(document.getElementById('root')!)
 root.render(
@@ -13,6 +14,7 @@ root.render(
 		{/* <ClockApp /> */}
 		{/* <AlertButton text="Click me" alert="1" /> */}
 		{/* <HelloNames names={['Sara', 'Cahal', 'Edite']} /> */}
-		<ProductTableApp />
+		{/* <ProductTableApp /> */}
+		<TicTacToe />
 	</>
 )
